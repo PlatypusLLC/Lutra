@@ -3,6 +3,7 @@
 
 #include "Platypus.h"
 #include "RoboClaw.h"
+#include "RC.h"
 
 namespace platypus 
 {
@@ -69,7 +70,7 @@ namespace platypus
     
   private:
     Servo servo_;
-    Servo servo_legacy_; // TODO: remove this once we only have v3+ boards
+    Servo servo_legacy_;
     float position_;
   };
 
@@ -137,6 +138,16 @@ namespace platypus
     uint32_t desired_position_;
     int32_t desired_velocity_;
     uint32_t desired_acceleration_;
+  };
+
+  class RC : public Sensor, public RC_Controller
+  {
+    public:
+      RC(int channel);
+      char *name();
+      
+      
+    
   };
 }
 
