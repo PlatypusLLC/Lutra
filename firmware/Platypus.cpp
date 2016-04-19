@@ -61,8 +61,6 @@ void platypusLoop_()
   // TODO: Currently, this runs loops in series, which is wrong.
   // TODO: Parallelize these cooperative loops.
 
-  //Serial.println("In Platypus Loop");
-  
   // Run each motor loop task once.
   for (int motorIdx = 0; motorIdx < board::NUM_MOTORS; ++motorIdx)
   {
