@@ -145,6 +145,48 @@ void handleCommand(char *buffer)
       target_object = platypus::sensors[object_index];
       break;
 
+    
+    case 'i': // Sensor instantiation command
+      object_index = key[1] - '0';
+      Serial.print("Sensor instantiation command for S"); Serial.print(object_index); 
+      Serial.print(".  Current name = "); Serial.println(platypus::sensors[object_index]->name());
+
+      if (strcmp(platypus::sensors[object_index]->name(), "dummy") != 0)
+      {
+        Serial.println("   Not a dummy sensor. Freeing the memory.");
+        delete platypus::sensors[object_index]; // free the memory      
+        platypus::sensors[object_index] = &(platypus::Sensor::dummy()); // temporarily point to the dummy sensor again
+        platypus::SerialHandler_t handler = {platypus::Sensor::onSerialDummy_, platypus::sensors[object_index]};
+        platypus::SERIAL_HANDLERS[object_index] = handler;
+      }      
+      { // enclosing scope for new objects in switch-case
+        const char * sensor_type = it->value;
+        if (strcmp(sensor_type, "AtlasDO") == 0)
+        {
+          platypus::sensors[object_index] = new platypus::AtlasDO(object_index);
+          Serial.print("    S"); Serial.print(object_index); Serial.println(" is now AtlasDO");
+        }
+        else if (strcmp(sensor_type, "AtlasPH") == 0)
+        {
+          platypus::sensors[object_index] = new platypus::AtlasPH(object_index);
+          Serial.print("    S"); Serial.print(object_index); Serial.println(" is now AtlasPH");
+        }
+        else if (strcmp(sensor_type, "ES2") == 0)
+        {
+          platypus::sensors[object_index] = new platypus::ES2(object_index);
+          Serial.print("    S"); Serial.print(object_index); Serial.println(" is now ES2");
+        }        
+        else if (strcmp(sensor_type, "GY26Compass") == 0)
+        {
+          platypus::sensors[object_index] = new platypus::GY26Compass(object_index);
+        }  
+        else if (strcmp(sensor_type, "HDS") == 0)
+        {
+          platypus::sensors[object_index] = new platypus::HDS(object_index);
+        }  
+      }
+      continue;    
+
     default: // Unrecognized target
       reportError("Unknown command target.", buffer);
       return;
@@ -153,7 +195,7 @@ void handleCommand(char *buffer)
     // Extract JsonObject with param:value pairs
     JsonObject& params = it->value;
 
-    // Todo: Move this parsing to specific components and pass ref to params instead
+    // TODO: Move this parsing to specific components and pass ref to params instead
     // Iterate over and set parameter:value pairs on target object
     for (JsonObject::iterator paramIt=params.begin(); paramIt!=params.end(); ++paramIt)
     {
@@ -190,13 +232,14 @@ void setup()
 
   // Start the system in the disconnected state
   system_state = DISCONNECTED;
+    
   
-  // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::GY26Compass(1);
-  platypus::sensors[2] = new platypus::GY26Compass(2);
-  platypus::sensors[3] = new platypus::GY26Compass(3);
+  for (int i = 1; i < 4; i++)
+  {
+    platypus::sensors[i] = &(platypus::Sensor::dummy());
+  }
   
   // Initialize motors
   platypus::motors[0] = new platypus::Dynamite(0);

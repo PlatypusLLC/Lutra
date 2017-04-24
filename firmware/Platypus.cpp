@@ -311,6 +311,11 @@ void Motor::onLoop_(void *data)
   self->loop();
 }
 
+Sensor::Sensor()
+: channel_(0)
+{  
+}
+
 Sensor::Sensor(int channel) 
 : channel_(channel)
 {  
@@ -353,7 +358,7 @@ Sensor::Sensor(int channel)
   digitalWrite(board::SENSOR[channel].PWR_ENABLE, LOW);
   
   // Register serial event handler
-  SerialHandler_t handler = {Sensor::onSerial_, this}; 
+  SerialHandler_t handler = {Sensor::onSerial_, this};
   SERIAL_HANDLERS[channel] = handler;
 }
 
@@ -371,6 +376,11 @@ bool Sensor::set(const char* param, const char* value)
   return false;
 }
 
+char * Sensor::name()
+{
+  return "dummy";
+}
+
 void Sensor::onSerial() 
 {
   // Default to doing nothing on serial events. 
@@ -381,6 +391,11 @@ void Sensor::onSerial_(void *data)
   // Resolve self-reference and call member function.
   Sensor *self = (Sensor*)data;
   self->onSerial();
+}
+
+void Sensor::onSerialDummy_(void *data)
+{
+  
 }
 
 void Sensor::loop()
@@ -394,3 +409,10 @@ void Sensor::onLoop_(void *data)
   Sensor *self = (Sensor*)data;
   self->loop();
 }
+
+Sensor &Sensor::dummy()
+{
+  static Sensor dummy;
+  return dummy;
+}
+
